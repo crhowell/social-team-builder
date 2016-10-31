@@ -1,2 +1,2 @@
-# social-team-builder
+# Social Team Builder
 Social Team Builder - Teamtreehouse
