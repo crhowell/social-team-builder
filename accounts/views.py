@@ -1,18 +1,17 @@
-from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core.urlresolvers import reverse_lazy
 from django.views import generic
 from authtools import views as authviews
+from django.contrib.auth import login
+from django.contrib.auth.forms import AuthenticationForm
 
 from braces import views as bracesviews
-
-
-User = get_user_model()
+from . import forms
 
 
 class LoginView(bracesviews.AnonymousRequiredMixin, authviews.LoginView):
     template_name = 'login.html'
     form_class = AuthenticationForm
+    success_url = reverse_lazy('home')
 
 
 class LogoutView(authviews.LogoutView):
@@ -22,8 +21,13 @@ class LogoutView(authviews.LogoutView):
 class SignUpView(bracesviews.AnonymousRequiredMixin,
                  bracesviews.FormValidMessageMixin,
                  generic.CreateView):
-    model = User
+
     template_name = 'signup.html'
-    success_url = reverse_lazy('home')
-    form_class = UserCreationForm
+    success_url = reverse_lazy('accounts:login')
+    form_class = forms.SignUpForm
     form_valid_message = "You're signed up!"
+
+    def form_valid(self, form):
+        resp = super(SignUpView, self).form_valid(form)
+
+        return resp

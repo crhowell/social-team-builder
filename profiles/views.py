@@ -1,3 +1,10 @@
-from django.shortcuts import render
+from django.views import generic
+from braces.views import LoginRequiredMixin
 
-# Create your views here.
+
+class ShowProfile(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'profile.html'
+
+
+class EditProfile(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'profile_edit.html'
