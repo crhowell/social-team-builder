@@ -52,7 +52,8 @@
           <nav>
             <ul class="circle--inline">
 				{% if user.is_authenticated %}
-					<li><a href="#profile">Profile</a></li>
+					<li><a href="#profile">My Profile</a></li>
+                    <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
 
 				{% else %}
 					<li><a href="{% url 'accounts:signup' %}">Sign Up</a></li>

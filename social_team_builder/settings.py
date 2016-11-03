@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'core',
     'accounts',
     'profiles',
+    'projects',
 ]
 
 MIDDLEWARE = [
@@ -118,6 +119,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'core', 'static')
+
+# Media
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Debug Toolbar
 INTERNAL_IPS = ('127.0.0.1',)

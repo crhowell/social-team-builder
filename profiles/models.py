@@ -8,8 +8,8 @@ class UserProfile(models.Model):
         settings.AUTH_USER_MODEL, primary_key=True)
     slug = models.SlugField(max_length=32, unique=True, blank=True,
                             editable=False)
-    picture = models.ImageField('Profile picture',
-                                upload_to='profile_pics/%Y-%m-%d/',
+    avatar = models.ImageField('Avatar picture',
+                                upload_to='avatars/%Y-%m-%d/',
                                 null=True,
                                 blank=True)
     bio = models.CharField("Short Bio", max_length=200, blank=True, null=True)
