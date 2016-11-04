@@ -16,7 +16,7 @@ class UserProfile(models.Model):
                                blank=True)
     bio = models.TextField("Short Bio", default='')
     email_verified = models.BooleanField("Email verified", default=False)
-    skills = models.ManyToManyField('projects.Skill', related_name='skills')
+    skills = models.ManyToManyField('projects.Skill', blank=True, related_name='skills')
 
     @property
     def full_name(self):
