@@ -5,7 +5,7 @@
   <!-- Basic Page Needs
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <meta charset="utf-8">
-  <title>{% block title %} | ST Builder{% endblock %}</title>
+  <title>{% block title %}{% endblock %} | ST Builder</title>
   <meta name="description" content="">
   <meta name="author" content="">
 
@@ -52,7 +52,7 @@
           <nav>
             <ul class="circle--inline">
 				{% if user.is_authenticated %}
-					<li><a href="#profile">My Profile</a></li>
+					<li><a href="{% url 'profiles:show_profile' user.profile.slug %}">My Profile</a></li>
                     <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
 
 				{% else %}
