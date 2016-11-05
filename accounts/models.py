@@ -39,3 +39,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_full_name(self):
         return '{}'.format(self.email)
+
+    def __str__(self):
+        return self.get_short_name()

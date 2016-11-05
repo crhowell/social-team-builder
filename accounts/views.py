@@ -11,11 +11,11 @@ from . import forms
 class LoginView(bracesviews.AnonymousRequiredMixin, authviews.LoginView):
     template_name = 'login.html'
     form_class = AuthenticationForm
-    success_url = reverse_lazy('home')
+    success_url = reverse_lazy('projects:project_list')
 
 
 class LogoutView(authviews.LogoutView):
-    url = reverse_lazy('home')
+    url = reverse_lazy('projects:project_list')
 
 
 class SignUpView(bracesviews.AnonymousRequiredMixin,

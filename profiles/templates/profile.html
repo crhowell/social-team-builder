@@ -83,7 +83,7 @@
         <ul class="circle--link--list">
           {% if projects %}
             {% for project in projects %}
-              <li><a>{{ project.title }}</a></li>
+              <li><a href="{% url 'projects:project_detail' project.id %}">{{ project.title }}</a></li>
             {% endfor %}
           {% else %}
             <li>N/A</li>
