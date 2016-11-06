@@ -2,6 +2,8 @@ from django.core.urlresolvers import reverse_lazy
 from django.views import generic
 from braces.views import LoginRequiredMixin, PrefetchRelatedMixin
 
+
+from core.mixins import IsOwnerMixin
 from . import forms
 from . import models
 
@@ -19,7 +21,7 @@ class ShowProfile(LoginRequiredMixin, PrefetchRelatedMixin, generic.DetailView):
         return context
 
 
-class EditProfile(LoginRequiredMixin, PrefetchRelatedMixin, generic.UpdateView):
+class EditProfile(LoginRequiredMixin, IsOwnerMixin, PrefetchRelatedMixin, generic.UpdateView):
     model = models.UserProfile
     form_class = forms.UserProfileUpdateForm
     template_name = 'profile_edit.html'
