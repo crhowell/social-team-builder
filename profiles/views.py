@@ -12,12 +12,12 @@ class ShowProfile(LoginRequiredMixin, PrefetchRelatedMixin, generic.DetailView):
     model = models.UserProfile
     template_name = 'profile.html'
     context_object_name = 'profile'
-    prefetch_related = ['user__projects', 'skills']
+    prefetch_related = ['user__projects', 'skills', 'user__projects__positions']
 
     def get_context_data(self, **kwargs):
         context = super(ShowProfile, self).get_context_data(**kwargs)
-        context['projects'] = context['profile'].user.projects.all()
         context['skills'] = context['profile'].skills.all()
+        context['projects'] = context['profile'].user.projects.all()
         return context
 
 
@@ -30,3 +30,4 @@ class EditProfile(LoginRequiredMixin, IsOwnerMixin, PrefetchRelatedMixin, generi
 
     def get_success_url(self):
         return reverse_lazy('profiles:show_profile', kwargs={'slug': self.object.slug})
+

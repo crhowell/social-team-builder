@@ -21,15 +21,14 @@
       <div class="circle--filter circle--secondary--module">
         <h4>Project Needs</h4>
         <ul class="circle--filter--list">
-          <li><a class="selected">All Needs</a></li>
-          <li><a>Android Developer</a></li>
-          <li><a>Designer</a></li>
-          <li><a>Java Developer</a></li>
-          <li><a>PHP Developer</a></li>
-          <li><a>Python Developer</a></li>
-          <li><a>Rails Developer</a></li>
-          <li><a>WordPress Developer</a></li>
-          <li><a>iOS Developer</a></li>
+          {% if project_needs %}
+            <li><a href="{% url 'projects:project_list' %}" {% if not curr_filter %}class="selected"{% endif %}>All Needs</a></li>
+            {% for position in project_needs %}
+              <li><a href="?filter={{ position.name }}"{% if curr_filter == position.name %}class="selected"{% endif %}>{{ position.name }}</a></li>
+            {% endfor %}
+          {% else %}
+            <li>N/A</li>
+          {% endif %}
         </ul>
       </div>
     </div>
@@ -49,7 +48,7 @@
                   <h3>{{ project.title }}</h3>
                 </td>
                 <td class="circle--cell--right">
-                  <span class="secondary-label">[ PLACE HOLDER ]</span>
+                  <span class="secondary-label">{{ project.positions.all|join:", " }}</span>
                 </td>
             </tr>
         {% endfor %}
