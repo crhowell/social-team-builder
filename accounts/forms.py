@@ -1,20 +1,26 @@
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.forms import AuthenticationForm
+
 from authtools import forms as authforms
 
 
-class LoginForm(forms.ModelForm):
+User = get_user_model()
 
-    def clean(self):
-        email = self.cleaned_data.get('email')
-        password = self.cleaned_data.get('password')
 
-        if email is not None and password:
-            user = authenticate(email=email, password=password)
-            if user is None:
-                raise forms.ValidationError('Email or password is invalid')
+class LoginForm(AuthenticationForm):
+    username = forms.CharField(
+        required=True,
+        widget=forms.EmailInput(attrs={'placeholder': 'E-mail'})
+    )
+    password = forms.CharField(
+        required=True,
+        widget=forms.PasswordInput(attrs={'placeholder': 'Password'})
+    )
 
-        return self.cleaned_data
+    class Meta:
+        model = User
+        fields = ('username', 'password')
 
 
 class SignUpForm(authforms.UserCreationForm):
@@ -33,5 +39,5 @@ class SignUpForm(authforms.UserCreationForm):
     )
 
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ('email',)

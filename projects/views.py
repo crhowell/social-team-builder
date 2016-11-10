@@ -4,6 +4,7 @@ from django.db.models import Q
 from braces.views import LoginRequiredMixin, PrefetchRelatedMixin
 
 from core.mixins import IsOwnerMixin
+from . import forms
 from . import models
 
 
@@ -51,8 +52,25 @@ class ProjectDetailView(PrefetchRelatedMixin, generic.DetailView):
 
 class ProjectCreateView(LoginRequiredMixin, generic.CreateView):
     model = models.Project
+    form_class = forms.ProjectCreateForm
     template_name = 'project_create.html'
-    fields = ('title', 'description', 'is_active')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.get_form()
+        context['positions_formset'] = forms.PositionInlineFormSet(
+            instance=self.object
+        )
+        return context
+
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        context = self.get_context_data()
+        return self.render_to_response(context)
 
 
 class ProjectEditView(LoginRequiredMixin, IsOwnerMixin, generic.UpdateView):

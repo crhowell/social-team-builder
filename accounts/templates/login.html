@@ -8,7 +8,10 @@
         <h2>Sign In</h2>
         <form method="POST" action="">
             {% csrf_token %}
-            {{ form.as_p }}
+            {{ form.username.errors }}
+            {{ form.password.errors }}
+            {{ form.username }}
+            {{ form.password }}
             <button class="button-primary" type="submit">Sign In</button>
         </form>
         </div>
