@@ -1,4 +1,5 @@
 import uuid
+
 from django.conf import settings
 from django.db import models
 
@@ -35,3 +36,13 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return "{}'s profile".format(self.user.get_short_name())
+
+
+class UserApplication(models.Model):
+    applicant = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='application')
+    project = models.ForeignKey('projects.Project')
+    position = models.ForeignKey('projects.Position')
+    is_accepted = models.NullBooleanField(default=None)
+
+    def __str__(self):
+        return '{} for {}'.format(self.position, self.project)

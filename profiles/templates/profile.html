@@ -6,8 +6,8 @@
 <div class="circle--actions--bar">
     <nav class="bounds">
       <ul class="circle--pill--list">
-        <li><a href="applications.html">Applications</a></li>
-        <li><a class="selected" href="{% url 'profiles:show_profile' profile.slug %}">Profile</a></li>
+        <li><a href="{% url 'profiles:my_applications' %}">Applications</a></li>
+        <li><a class="selected" href="{% url 'profiles:my_profile' %}">Profile</a></li>
       </ul>
     </nav>
   </div>
