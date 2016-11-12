@@ -1,3 +1,5 @@
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, reverse
 from django.views import generic
 from django.db.models import Q
 
@@ -6,6 +8,7 @@ from braces.views import LoginRequiredMixin, PrefetchRelatedMixin
 from core.mixins import IsOwnerMixin
 from . import forms
 from . import models
+from profiles.models import UserApplication
 
 
 class ProjectListView(PrefetchRelatedMixin, generic.ListView):
@@ -16,8 +19,8 @@ class ProjectListView(PrefetchRelatedMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(ProjectListView, self).get_context_data(**kwargs)
-        context['project_needs'] = models.Skill.objects.filter(
-            positions__project__in=context['projects']
+        context['project_needs'] = models.Position.objects.filter(
+            project__in=context['projects']
         )
         context['curr_filter'] = self.request.GET.get('filter')
         context['curr_term'] = self.request.GET.get('s')
@@ -33,7 +36,7 @@ class ProjectListView(PrefetchRelatedMixin, generic.ListView):
             )
         filter_term = self.request.GET.get('filter')
         if filter_term:
-            queryset = queryset.filter(positions__related_skills__name=filter_term)
+            queryset = queryset.filter(positions__name=filter_term)
         return queryset.filter(is_active=True)
 
 
@@ -41,7 +44,7 @@ class ProjectDetailView(PrefetchRelatedMixin, generic.DetailView):
     model = models.Project
     template_name = 'project_detail.html'
     context_object_name = 'project'
-    prefetch_related = ['creator__profile', 'positions', 'positions__related_skills']
+    prefetch_related = ['creator__profile', 'positions']
 
     def get_context_data(self, **kwargs):
         context = super(ProjectDetailView, self).get_context_data(**kwargs)
@@ -82,3 +85,30 @@ class ProjectEditView(LoginRequiredMixin, IsOwnerMixin, generic.UpdateView):
         context = super(ProjectEditView, self).get_context_data(**kwargs)
         context['profile'] = context['project'].creator.profile
         return context
+
+
+class PositionApplyView(LoginRequiredMixin, generic.TemplateView):
+
+    def get(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk')
+        pos_pk = self.kwargs.get('position')
+
+        project = get_object_or_404(models.Project, pk=pk)
+        position = get_object_or_404(models.Position, pk=pos_pk)
+        if position:
+            application = UserApplication.objects.filter(
+                applicant=self.request.user,
+                project=pk,
+                pk=pos_pk
+            )
+            if application.exists():
+                print('Already applied for this position')
+                HttpResponseRedirect(reverse('projects:project_detail', kwargs={'pk': pk}))
+
+            application = UserApplication.objects.create(
+                applicant=self.request.user,
+                project=project,
+                position=position
+            )
+            print(application)
+        return HttpResponseRedirect(reverse('projects:project_detail', kwargs={'pk': pk}))

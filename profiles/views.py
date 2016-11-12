@@ -52,7 +52,7 @@ class UserApplications(LoginRequiredMixin, PrefetchRelatedMixin, generic.ListVie
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        return queryset
+        return queryset.filter(project__creator=self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

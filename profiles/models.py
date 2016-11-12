@@ -4,6 +4,14 @@ from django.conf import settings
 from django.db import models
 
 
+class Skill(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return '{}'.format(self.name)
+
+
 class UserProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, primary_key=True, related_name='profile')
@@ -17,7 +25,7 @@ class UserProfile(models.Model):
                                blank=True)
     bio = models.TextField("Short Bio", default='')
     email_verified = models.BooleanField("Email verified", default=False)
-    skills = models.ManyToManyField('projects.Skill', blank=True, related_name='skills')
+    skills = models.ManyToManyField(Skill, blank=True, related_name='skills')
 
     @property
     def full_name(self):

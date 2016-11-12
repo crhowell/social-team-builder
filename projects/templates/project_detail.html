@@ -34,7 +34,7 @@
           <li>
             <h3>{{ position.name }}</h3>
             <p>{{ position.description }}</p>
-            <a class="button button-primary">Apply</a>
+            <a href="{% url 'projects:position_apply' position.project.pk position.pk %}" class="button button-primary">Apply</a>
           </li>
           {% endfor %}
         </ul>
