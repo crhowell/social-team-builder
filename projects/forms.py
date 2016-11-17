@@ -23,12 +23,12 @@ class ProjectCreateForm(FormSetMedia):
         widget=forms.Textarea(attrs={'placeholder': 'Project description...'})
     )
     requirements = forms.CharField(
-        widget=forms.Textarea(attrs={'placeholder': 'Applicant Requirements'})
+        widget=forms.Textarea(attrs={'placeholder': ''})
     )
     timeline = forms.CharField(
         widget=forms.Textarea(
             attrs={
-                'placeholder': 'Project estimate',
+                'placeholder': 'Time estimate',
                 'class': 'circle--textarea--input'
             })
     )
@@ -43,7 +43,7 @@ class PositionCreateForm(FormSetMedia):
         max_length=100,
         widget=forms.TextInput(
             attrs={
-                'placeholder': 'Position name',
+                'placeholder': 'Position Title',
                 'class': ''
             }
         )
@@ -51,7 +51,7 @@ class PositionCreateForm(FormSetMedia):
     description = forms.CharField(
         widget=forms.Textarea(
             attrs={
-                'placeholder': 'Position description',
+                'placeholder': 'Position description...',
                 'class': ''
             }
         )

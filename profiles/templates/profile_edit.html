@@ -25,7 +25,10 @@
     <div class="grid-70">
       <form action="" method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
+        {{ form.first_name }}
+        {{ form.last_name }}
+        {{ form.bio }}
+        {{ form.skills }}
         <button type="submit">Update</button>
       </form>
     </div>
