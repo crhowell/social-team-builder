@@ -1,64 +1,75 @@
 {% extends 'layouts/base.html' %}
 
 {% block title %}{{ block.super }}{% endblock %}
-{% block content %}
 
-{% if user.is_authenticated and user == project.creator %}
+  {% block content %}
+<form action="" method="POST">
+    {% csrf_token %}
   <div class="circle--actions--bar">
     <div class="bounds">
       <div class="grid-100">
-        <a class="button button-primary" href="project.html">Save Changes</a>
-        <a class="button button-text" href="index.html">Delete Project</a>
+        <button class="button button-primary" type="submit">Save changes</button>
+        <a class="button button-text" href="{% url 'projects:project_delete' project.pk %}">Delete project</a>
       </div>
     </div>
   </div>
-{% endif %}
+
   <div class="bounds circle--page circle--article">
     <div class="grid-70">
       <div class="circle--article--body">
-        <input type="text" class="circle--input--h1" placeholder="Project Title" value="Currency Calculator" />
-        <textarea placeholder="Project description...">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</textarea>
+          {{ form.title.errors }}
+          {{ form.title }}
+          {{ form.description }}
       </div>
 
       <div class="circle--project--positions">
         <h2>Positions</h2>
 
-        <ul class="circle--group--list circle--clone--list">
-          <li>
-            <input type="text" class="circle--input--h3" placeholder="Position Title" value="iOS Developer" />
-            <textarea placeholder="Position description...">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</textarea>
-            <a class="circle--clone--add">Add Position</a>
-            <a class="circle--clone--remove">Remove</a>
-          </li>
+        <ul class="circle--group--list circle--list">
+            {{ p_formset.management_form }}
+            {% for p_form in p_formset %}
 
-          <li>
-            <input type="text" class="circle--input--h3" placeholder="Position Title" value="Designer" />
-            <textarea placeholder="Position description...">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</textarea>
-            <a class="circle--clone--add">Add Position</a>
-            <a class="circle--clone--remove">Remove</a>
-          </li>
+            <li class="p-formset">
+                {{ p_form.name }}
+                {{ p_form.description }}
+
+            </li>
+            {% endfor %}
         </ul>
 
-        <a class="button button-primary" href="project.html">Save Changes</a>
+        <button class="button button-primary" type="submit">Save changes</button>
 
       </div>
     </div>
 
     <div class="grid-25 grid-push-5">
+
       <div class="circle--secondary--module">
         <h3>Project Timeline</h3>
-        <textarea placeholder="Time estimate" class="circle--textarea--input">10 hours</textarea>
+          {{ form.timeline.errors }}
+          {{ form.timeline }}
+
       </div>
 
       <div class="circle--secondary--module">
-        <h3>Application Requirements</h3>
-        <textarea>Applicants are required to work from our headquarters located in Antarctica.</textarea>
+        <h3>Applicant Requirements</h3>
+          {{ form.requirements.errors }}
+          {{ form.requirements }}
       </div>
-
     </div>
   </div>
+</form>
 {% endblock %}
+
+{% block js %}
+    {% load static from staticfiles %}
+    {{ form.media.js }}
+    <script src="{% static 'js/jquery.formset.js' %}"></script>
+    <script>
+        $('.p-formset').formset({
+            prefix: '{{ p_formset.prefix }}',
+            addText: 'Add position',
+            deleteText: 'Remove'
+        });
+    </script>
+{% endblock js %}

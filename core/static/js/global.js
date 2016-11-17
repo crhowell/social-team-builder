@@ -8,6 +8,7 @@ $( document ).ready(function() {
     var parent = $(this).parent("li");
     var copy = parent.clone();
     parent.after(copy);
+    copy.find("input[name*='id_']");
     copy.find("input, textarea, select").val("");
     copy.find("*:first-child").focus();
   });

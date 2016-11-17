@@ -3,7 +3,14 @@ from django import forms
 from . import models
 
 
-class ProjectCreateForm(forms.ModelForm):
+class FormSetMedia(forms.ModelForm):
+    class Media:
+        js = (
+            'js/jquery.formset.js',
+        )
+
+
+class ProjectCreateForm(FormSetMedia):
     title = forms.CharField(
         max_length=100,
         widget=forms.TextInput(
@@ -25,21 +32,46 @@ class ProjectCreateForm(forms.ModelForm):
                 'class': 'circle--textarea--input'
             })
     )
-    is_active = forms.BooleanField(
-        widget=forms.CheckboxInput(attrs={'default': False})
-    )
 
     class Meta:
         model = models.Project
-        fields = ('title', 'description', 'requirements', 'timeline', 'is_active')
+        fields = ('title', 'description', 'requirements', 'timeline')
 
-# TODO: Create custom form for positions for placeholders and classes
 
-PositionInlineFormSet = forms.inlineformset_factory(
-    models.Project,
+class PositionCreateForm(FormSetMedia):
+    name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'Position name',
+                'class': ''
+            }
+        )
+    )
+    description = forms.CharField(
+        widget=forms.Textarea(
+            attrs={
+                'placeholder': 'Position description',
+                'class': ''
+            }
+        )
+    )
+
+    class Meta:
+        model = models.Position
+        fields = ('name', 'description')
+
+
+PositionFormSet = forms.modelform_factory(
     models.Position,
+    form=PositionCreateForm
+)
+
+PositionInlineFormSet = forms.modelformset_factory(
+    models.Position,
+    form=PositionCreateForm,
+    fields=('name', 'description'),
     extra=0,
-    fields=('name', 'description', 'total'),
     min_num=1,
     max_num=8
 )

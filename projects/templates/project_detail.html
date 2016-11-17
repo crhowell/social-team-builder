@@ -7,8 +7,8 @@
   <div class="circle--actions--bar">
     <div class="bounds">
       <div class="grid-100">
-        <a class="button" href="project_edit.html">Edit Project</a>
-        <a class="button button-text" href="index.html">Delete Project</a>
+        <a class="button" href="{% url 'projects:project_edit' project.pk %}">Edit Project</a>
+        <a class="button button-text" href="{% url 'projects:project_delete' project.pk %}">Delete Project</a>
       </div>
     </div>
   </div>

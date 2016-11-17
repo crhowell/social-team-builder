@@ -1,5 +1,6 @@
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, reverse
+from django.shortcuts import get_object_or_404, reverse, Http404
+from django.urls import reverse_lazy
 from django.views import generic
 from django.db.models import Q
 
@@ -37,7 +38,7 @@ class ProjectListView(PrefetchRelatedMixin, generic.ListView):
         filter_term = self.request.GET.get('filter')
         if filter_term:
             queryset = queryset.filter(positions__name=filter_term)
-        return queryset.filter(is_active=True)
+        return queryset
 
 
 class ProjectDetailView(PrefetchRelatedMixin, generic.DetailView):
@@ -57,34 +58,65 @@ class ProjectCreateView(LoginRequiredMixin, generic.CreateView):
     model = models.Project
     form_class = forms.ProjectCreateForm
     template_name = 'project_create.html'
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        return queryset
+    success_url = reverse_lazy('projects:project_list')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = self.get_form()
-        context['positions_formset'] = forms.PositionInlineFormSet(
-            instance=self.object
+        context['p_formset'] = forms.PositionInlineFormSet(
+            queryset=models.Position.objects.none(),
+            prefix='p_formset'
         )
         return context
 
-    def get(self, request, *args, **kwargs):
-        super().get(request, *args, **kwargs)
-        context = self.get_context_data()
-        return self.render_to_response(context)
+    def post(self, request, *args, **kwargs):
+        form = forms.ProjectCreateForm(self.request.POST)
+        p_formset = forms.PositionInlineFormSet(
+            self.request.POST,
+            queryset=models.Position.objects.none(),
+            prefix='p_formset'
+        )
+        if form.is_valid():
+            project = form.save(commit=False)
+            project.creator = self.request.user
+            project.save()
+            if p_formset.is_valid():
+                positions = p_formset.save(commit=False)
+                for position in positions:
+                    position.project = project
+                    position.save()
+
+        # TODO: More logic needed here.
+        return HttpResponseRedirect(reverse('projects:project_list'))
 
 
 class ProjectEditView(LoginRequiredMixin, IsOwnerMixin, generic.UpdateView):
     model = models.Project
+    form_class = forms.ProjectCreateForm
     template_name = 'project_edit.html'
-    fields = ('title', 'description', 'is_active')
 
     def get_context_data(self, **kwargs):
-        context = super(ProjectEditView, self).get_context_data(**kwargs)
-        context['profile'] = context['project'].creator.profile
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.get_form()
+        context['p_formset'] = forms.PositionInlineFormSet(
+            queryset=models.Position.objects.filter(project=context['project']),
+            prefix='p_formset'
+        )
         return context
+
+
+class ProjectDeleteView(LoginRequiredMixin, IsOwnerMixin, generic.DeleteView):
+    model = models.Project
+    form_class = forms.ProjectCreateForm
+    context_object_name = 'project'
+    template_name = 'project_delete.html'
+    success_url = reverse_lazy('projects:project_list')
+
+    def get_object(self, queryset=None):
+        obj = super().get_object()
+        if not obj.creator == self.request.user:
+            raise Http404
+        return obj
 
 
 class PositionApplyView(LoginRequiredMixin, generic.TemplateView):

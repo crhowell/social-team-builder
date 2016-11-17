@@ -1368,13 +1368,13 @@ hr {
   list-style-type: none;
 }
 /* line 58, ../sass/circle/components/lists.sass */
-.circle--clone--list a {
+.circle--clone--list a, .circle--list a{
   text-decoration: none;
   font-family: "Work Sans", sans-serif;
   font-weight: bold;
 }
 /* line 62, ../sass/circle/components/lists.sass */
-.circle--clone--add, .circle--clone--remove {
+.circle--clone--add, .circle--clone--remove, .add-row {
   cursor: pointer;
 }
 /* line 65, ../sass/circle/components/lists.sass */
