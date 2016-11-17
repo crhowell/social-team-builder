@@ -18,7 +18,7 @@
         <h2>Profile</h2>
       </div>
       <div class="circle--fluid--cell circle--fluid--secondary">
-        <a class="button icon-on-left" href="{% url 'profiles:edit_profile' profile.slug %}">Edit</a>
+        <a class="button icon-on-left" href="{% url 'profiles:edit_profile' %}">Edit</a>
       </div>
     </div>
 
@@ -64,7 +64,7 @@
 
       <div class="circle--secondary--module">
         <!-- Placeholder Gravatar -->
-          <img src="http://www.gravatar.com/avatar/94d093eda664addd6e450d7e9881bcad?s=128&d=identicon" alt="Avatar" width="100%">
+          <img src="{{ profile.get_avatar_url }}" alt="Avatar" width="100%">
       </div>
 
       <div class="circle--secondary--module">

@@ -1,13 +1,7 @@
 from django import forms
 
+from core.forms import FormSetMedia
 from . import models
-
-
-class FormSetMedia(forms.ModelForm):
-    class Media:
-        js = (
-            'js/jquery.formset.js',
-        )
 
 
 class ProjectCreateForm(FormSetMedia):

@@ -18,7 +18,15 @@ class Position(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(default='')
     project = models.ForeignKey(Project, related_name='positions')
+    skills = models.ManyToManyField('Skill', related_name='related_skills')
 
     def __str__(self):
         return '{}'.format(self.name)
 
+
+class Skill(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return self.name

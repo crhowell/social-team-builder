@@ -1364,8 +1364,8 @@ hr {
   display: block;
 }
 /* line 56, ../sass/circle/components/lists.sass */
-.circle--clone--list {
-  list-style-type: none;
+.circle--clone--list, ul.circle--group {
+  list-style-type: none !important;
 }
 /* line 58, ../sass/circle/components/lists.sass */
 .circle--clone--list a, .circle--list a{
