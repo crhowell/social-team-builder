@@ -45,12 +45,13 @@ class ProjectDetailView(PrefetchRelatedMixin, generic.DetailView):
     model = models.Project
     template_name = 'project_detail.html'
     context_object_name = 'project'
-    prefetch_related = ['creator__profile', 'positions']
+    prefetch_related = ['creator__profile', 'positions', 'positions__applications']
 
     def get_context_data(self, **kwargs):
         context = super(ProjectDetailView, self).get_context_data(**kwargs)
         context['profile'] = context['project'].creator.profile
-        context['positions'] = context['project'].positions.all()
+        context['positions'] = models.Position.objects.filter(
+            project=context['project']).exclude(applications__is_accepted=True)
         return context
 
 
@@ -134,13 +135,13 @@ class PositionApplyView(LoginRequiredMixin, generic.TemplateView):
                 pk=pos_pk
             )
             if application.exists():
-                print('Already applied for this position')
-                HttpResponseRedirect(reverse('projects:project_detail', kwargs={'pk': pk}))
+                return HttpResponseRedirect(reverse(
+                   'projects:project_detail', kwargs={'pk': pk}))
 
             application = UserApplication.objects.create(
                 applicant=self.request.user,
                 project=project,
                 position=position
             )
-            print(application)
-        return HttpResponseRedirect(reverse('projects:project_detail', kwargs={'pk': pk}))
+        return HttpResponseRedirect(reverse(
+            'projects:project_detail', kwargs={'pk': pk}))

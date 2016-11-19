@@ -76,7 +76,7 @@ class UserProfile(models.Model):
 class UserApplication(models.Model):
     applicant = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='application')
     project = models.ForeignKey('projects.Project')
-    position = models.ForeignKey('projects.Position')
+    position = models.ForeignKey('projects.Position', related_name='applications')
     is_accepted = models.NullBooleanField(default=None)
 
     def __str__(self):

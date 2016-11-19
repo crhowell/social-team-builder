@@ -61,7 +61,7 @@
         </thead>
         <tbody>
         {% for application in application_list %}
-            <tr class="clickable-row" data-href="profile.html">
+            <tr class="clickable-row" data-href="{% url 'profiles:show_profile' application.applicant.profile.slug %}">
                 <td>
                   <h3>{{ application.applicant }}</h3>
                   <p>{{ application.project }}</p>
@@ -69,8 +69,21 @@
                 <td class="circle--cell--right">
                   <span class="secondary-label">{{ application.position }}</span>
                 </td>
-                <td>Approve</td>
-                <td>Deny</td>
+                {% if application.is_accepted == None %}
+                    <td>
+                        <a href="{% url 'profiles:status_update' application.position.pk application.applicant.pk 'approve' %}">Approve</a>
+                    </td>
+                    <td>
+                        <a href="{% url 'profiles:status_update' application.position.pk application.applicant.pk 'deny' %}">Deny</a>
+                    </td>
+                {% endif %}
+                {% if application.is_accepted %}
+                    <td colspan="2">Approved!</td>
+                {% else %}
+                    <td colspan="2">Denied</td>
+                {% endif %}
+
+
             </tr>
         {% endfor %}
         </tbody>

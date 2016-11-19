@@ -1,5 +1,5 @@
 from django.core.urlresolvers import reverse_lazy
-
+from django.db.models import Q
 from django.views import generic
 from django.shortcuts import (get_object_or_404, reverse,
                               HttpResponseRedirect, Http404)
@@ -126,3 +126,18 @@ class UserApplications(LoginRequiredMixin, PrefetchRelatedMixin, generic.ListVie
         context = super().get_context_data(**kwargs)
         context['projects'] = self.request.user.projects.all()
         return context
+
+
+class UserApplicationStatus(LoginRequiredMixin, generic.TemplateView):
+
+    def get(self, request, *args, **kwargs):
+        position = self.kwargs.get('position')
+        applicant = self.kwargs.get('applicant')
+        status = self.kwargs.get('status')
+        if status == 'approve' or status == 'deny':
+            if position and applicant:
+                bstatus = True if status == 'approve' else False
+                models.UserApplication.objects.filter(
+                    position=position, applicant=applicant
+                ).update(is_accepted=bstatus)
+        return HttpResponseRedirect(reverse('profiles:my_applications'))
