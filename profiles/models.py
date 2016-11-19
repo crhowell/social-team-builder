@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.utils.text import slugify
 
 
 def avatar_upload_path(instance, filename):
@@ -9,16 +10,16 @@ def avatar_upload_path(instance, filename):
 
 
 class Skill(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=100)
+    slug = models.SlugField()
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return '{}'.format(self.name)
-
-
-class UserRelatedSkill(models.Model):
-    profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE)
-    skill = models.ForeignKey(Skill, on_delete=models.CASCADE)
 
 
 class UserProject(models.Model):
@@ -43,7 +44,7 @@ class UserProfile(models.Model):
                                blank=True)
     bio = models.TextField("Short Bio", default='')
     email_verified = models.BooleanField("Email verified", default=False)
-    skills = models.ManyToManyField(Skill, through=UserRelatedSkill, blank=True, related_name='related_skills')
+    skills = models.ManyToManyField(Skill, blank=True, related_name='related_skills')
 
     @property
     def full_name(self):
@@ -53,10 +54,8 @@ class UserProfile(models.Model):
 
     @property
     def get_avatar_url(self):
-        print(self.avatar)
         if self.avatar:
             return '/media/{}'.format(self.avatar)
-
         return 'http://www.gravatar.com/avatar/{}?s=128&d=identicon'.format(
             '94d093eda664addd6e450d7e9881bcad'
         )

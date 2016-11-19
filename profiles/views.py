@@ -1,7 +1,8 @@
 from django.core.urlresolvers import reverse_lazy
+
 from django.views import generic
-from django.shortcuts import get_object_or_404, reverse, HttpResponseRedirect, Http404
-from django.db.models import Q
+from django.shortcuts import (get_object_or_404, reverse,
+                              HttpResponseRedirect, Http404)
 
 from braces.views import LoginRequiredMixin, PrefetchRelatedMixin
 
@@ -14,12 +15,15 @@ class ShowProfile(LoginRequiredMixin, PrefetchRelatedMixin, generic.TemplateView
     model = models.UserProfile
     template_name = 'profile.html'
     context_object_name = 'profile'
-    prefetch_related = ['user__projects', 'related_skills', 'user__projects__positions']
+    prefetch_related = [
+        'my_projects', 'related_skills',
+        'user__projects__positions', 'user__projects']
 
     def get_context_data(self, **kwargs):
         context = super(ShowProfile, self).get_context_data(**kwargs)
         context['skills'] = context['profile'].skills.all()
-        context['projects'] = context['profile'].user.projects.all()
+        context['p_projects'] = context['profile'].user.projects.all()
+        context['u_projects'] = context['profile'].my_projects.all()
         return context
 
     def get(self, request, **kwargs):
@@ -35,40 +39,72 @@ class ShowProfile(LoginRequiredMixin, PrefetchRelatedMixin, generic.TemplateView
 
 class EditProfile(LoginRequiredMixin, IsOwnerMixin, PrefetchRelatedMixin, generic.UpdateView):
     model = models.UserProfile
-    form_class = forms.UserProfileUpdateForm
+    form_class = forms.UserProfileForm
     template_name = 'profile_edit.html'
     context_object_name = 'profile'
-    prefetch_related = ['user__projects', 'related_skills']
+    prefetch_related = ['my_projects', 'related_skills']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = self.get_form()
-        context['formset'] = forms.SkillInlineFormSet(
+        context['s_formset'] = forms.SkillInlineFormSet(
             queryset=models.Skill.objects.filter(
-                pk__in=models.UserRelatedSkill.objects.filter(
-                    profile=context['profile']
-                )
+                related_skills=context['profile']
             ),
             prefix='skill_formset'
+        )
+        context['p_formset'] = forms.UserProjectInlineFormSet(
+            queryset=models.UserProject.objects.filter(
+                profile=context['profile']
+            ),
+            prefix='project_formset'
         )
         return context
 
     def get_object(self, queryset=None):
-        obj = get_object_or_404(models.UserProfile,
-                          user=self.request.user)
+        obj = get_object_or_404(
+            models.UserProfile,
+            user=self.request.user
+        )
         if obj.user != self.request.user:
             raise Http404
         return obj
 
     def post(self, request, *args, **kwargs):
-        form = forms.UserProfileUpdateForm(self.request.POST)
-        formset = forms.SkillInlineFormSet(self.request.POST)
+        profile = self.get_object()
+        form = forms.UserProfileForm(self.request.POST, instance=profile)
+        s_formset = forms.SkillInlineFormSet(
+            self.request.POST,
+            queryset=models.Skill.objects.filter(
+                related_skills=profile
+            ),
+            prefix='skill_formset'
+        )
+        p_formset = forms.UserProjectInlineFormSet(
+            self.request.POST,
+            queryset=models.UserProject.objects.filter(
+                profile=profile
+            ),
+            prefix='project_formset'
+        )
 
         if form.is_valid():
-            form.save()
-            if formset.is_valid():
-                formset.save_m2m()
-                return HttpResponseRedirect(reverse('profiles:my_profile'))
+            print('FORM is valid')
+            profile = form.save(commit=False)
+            if s_formset.is_valid() and p_formset.is_valid():
+                skills = s_formset.save()
+                projects = p_formset.save(commit=False)
+
+                for skill in skills:
+                    profile.skills.add(skill)
+                profile.save()
+
+                for project in projects:
+                    project.profile = profile
+                    project.save()
+            else:
+                print('formset not valid')
+
         return HttpResponseRedirect(reverse('profiles:my_profile'))
 
     def get_success_url(self):
