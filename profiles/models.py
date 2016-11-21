@@ -1,3 +1,4 @@
+import os
 import uuid
 
 from django.conf import settings
@@ -6,7 +7,8 @@ from django.utils.text import slugify
 
 
 def avatar_upload_path(instance, filename):
-    return 'avatars/user_{}/{}'.format(instance.user.id, filename)
+    return os.path.join('avatars', 'user_{0}', '{1}').format(
+        instance.user.id, filename)
 
 
 class Skill(models.Model):
@@ -44,7 +46,7 @@ class UserProfile(models.Model):
                                blank=True)
     bio = models.TextField("Short Bio", default='')
     email_verified = models.BooleanField("Email verified", default=False)
-    skills = models.ManyToManyField(Skill, blank=True, related_name='related_skills')
+    skills = models.ManyToManyField(Skill, blank=True, related_name='profile_skills')
 
     @property
     def full_name(self):

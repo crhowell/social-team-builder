@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 
+from profiles.models import Skill
+
 
 class Project(models.Model):
     title = models.CharField(max_length=255)
@@ -18,15 +20,7 @@ class Position(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(default='')
     project = models.ForeignKey(Project, related_name='positions')
-    skills = models.ManyToManyField('Skill', related_name='related_skills')
+    skills = models.ManyToManyField(Skill, related_name='related_skills')
 
     def __str__(self):
         return '{}'.format(self.name)
-
-
-class Skill(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(unique=True)
-
-    def __str__(self):
-        return self.name

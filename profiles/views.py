@@ -5,10 +5,22 @@ from django.shortcuts import (get_object_or_404, reverse,
                               HttpResponseRedirect, Http404)
 
 from braces.views import LoginRequiredMixin, PrefetchRelatedMixin
+from dal import autocomplete
 
 from core.mixins import IsOwnerMixin
 from . import forms
 from . import models
+
+
+class SkillAutoComplete(LoginRequiredMixin,
+                        IsOwnerMixin,
+                        autocomplete.Select2QuerySetView):
+
+    def get_queryset(self):
+        qs = models.Skill.objects.all()
+        if self.q:
+            qs = qs.filter(name__istartswith=self.q)
+        return qs
 
 
 class ShowProfile(LoginRequiredMixin, PrefetchRelatedMixin, generic.TemplateView):
@@ -16,7 +28,7 @@ class ShowProfile(LoginRequiredMixin, PrefetchRelatedMixin, generic.TemplateView
     template_name = 'profile.html'
     context_object_name = 'profile'
     prefetch_related = [
-        'my_projects', 'related_skills',
+        'my_projects', 'profile_skills',
         'user__projects__positions', 'user__projects']
 
     def get_context_data(self, **kwargs):
@@ -42,14 +54,14 @@ class EditProfile(LoginRequiredMixin, IsOwnerMixin, PrefetchRelatedMixin, generi
     form_class = forms.UserProfileForm
     template_name = 'profile_edit.html'
     context_object_name = 'profile'
-    prefetch_related = ['my_projects', 'related_skills']
+    prefetch_related = ['my_projects', 'profile_skills']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = self.get_form()
         context['s_formset'] = forms.SkillInlineFormSet(
             queryset=models.Skill.objects.filter(
-                related_skills=context['profile']
+                profile_skills=context['profile']
             ),
             prefix='skill_formset'
         )
@@ -72,11 +84,12 @@ class EditProfile(LoginRequiredMixin, IsOwnerMixin, PrefetchRelatedMixin, generi
 
     def post(self, request, *args, **kwargs):
         profile = self.get_object()
-        form = forms.UserProfileForm(self.request.POST, instance=profile)
+        form = forms.UserProfileForm(
+            self.request.POST, request.FILES, instance=profile)
         s_formset = forms.SkillInlineFormSet(
             self.request.POST,
             queryset=models.Skill.objects.filter(
-                related_skills=profile
+                profile_skills=profile
             ),
             prefix='skill_formset'
         )

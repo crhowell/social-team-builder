@@ -1,6 +1,7 @@
 from django import forms
 
 from core.forms import FormSetMedia
+from profiles.models import Skill
 from . import models
 
 
@@ -50,10 +51,14 @@ class PositionCreateForm(FormSetMedia):
             }
         )
     )
+    skills = forms.ModelMultipleChoiceField(
+        widget=forms.CheckboxSelectMultiple(),
+        queryset=Skill.objects.all()
+    )
 
     class Meta:
         model = models.Position
-        fields = ('name', 'description')
+        fields = ('name', 'description', 'skills')
 
 
 PositionFormSet = forms.modelform_factory(
@@ -64,7 +69,7 @@ PositionFormSet = forms.modelform_factory(
 PositionInlineFormSet = forms.modelformset_factory(
     models.Position,
     form=PositionCreateForm,
-    fields=('name', 'description'),
+    fields=('name', 'description', 'skills'),
     extra=0,
     min_num=1,
     max_num=8

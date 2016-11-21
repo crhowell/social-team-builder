@@ -9,19 +9,22 @@ from braces.views import LoginRequiredMixin, PrefetchRelatedMixin
 from core.mixins import IsOwnerMixin
 from . import forms
 from . import models
-from profiles.models import UserApplication
+from profiles.models import UserApplication, Skill
 
 
 class ProjectListView(PrefetchRelatedMixin, generic.ListView):
     model = models.Project
     template_name = 'project_list.html'
     context_object_name = 'projects'
-    prefetch_related = ['positions']
+    prefetch_related = ['positions', 'positions__skills']
 
     def get_context_data(self, **kwargs):
         context = super(ProjectListView, self).get_context_data(**kwargs)
         context['project_needs'] = models.Position.objects.filter(
             project__in=context['projects']
+        )
+        context['skill_needs'] = models.Skill.objects.filter(
+            related_skills__in=context['project_needs']
         )
         context['curr_filter'] = self.request.GET.get('filter')
         context['curr_term'] = self.request.GET.get('s')
@@ -37,7 +40,10 @@ class ProjectListView(PrefetchRelatedMixin, generic.ListView):
             )
         filter_term = self.request.GET.get('filter')
         if filter_term:
-            queryset = queryset.filter(positions__name=filter_term)
+            queryset = queryset.filter(
+                Q(positions__name=filter_term) |
+                Q(positions__skills__name=filter_term)
+            )
         return queryset
 
 
@@ -77,6 +83,7 @@ class ProjectCreateView(LoginRequiredMixin, generic.CreateView):
             queryset=models.Position.objects.none(),
             prefix='p_formset'
         )
+
         if form.is_valid():
             project = form.save(commit=False)
             project.creator = self.request.user
@@ -86,6 +93,7 @@ class ProjectCreateView(LoginRequiredMixin, generic.CreateView):
                 for position in positions:
                     position.project = project
                     position.save()
+                p_formset.save_m2m()
 
         # TODO: More logic needed here.
         return HttpResponseRedirect(reverse('projects:project_list'))
