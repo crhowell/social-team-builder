@@ -28,15 +28,22 @@
 
       <div class="circle--project--positions">
         <h2>Positions</h2>
-
         <ul class="circle--group--list">
+        {% if not positions %}
+        <li>There are no OPEN positions on this project.</li>
+        {% else %}
           {% for position in positions %}
           <li>
             <h3>{{ position.name }}</h3>
             <p>{{ position.description }}</p>
-            <a href="{% url 'projects:position_apply' position.project.pk position.pk %}" class="button button-primary">Apply</a>
+          {% if position in applied_for %}
+              <button disabled class="button button-inactive">Already Applied</button>
+          {% else %}
+            <a class="button button-primary" href="{% url 'projects:position_apply' position.project.pk position.pk %}">Apply</a>
+          {% endif %}
           </li>
           {% endfor %}
+        {% endif %}
         </ul>
       </div>
 

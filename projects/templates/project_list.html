@@ -61,7 +61,12 @@
                   <h3>{{ project.title }}</h3>
                 </td>
                 <td class="circle--cell--right">
-                  <span class="secondary-label">{{ project.positions.all|join:", " }}</span>
+
+                  <span class="secondary-label">{% if project.open_positions %}
+                      {{ project.open_positions|join:", " }}
+                      {% else %}No open positions
+                      {% endif %}
+                      </span>
                 </td>
             </tr>
         {% endfor %}

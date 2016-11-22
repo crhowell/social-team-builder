@@ -10,7 +10,13 @@ from dal import autocomplete
 from core.mixins import IsOwnerMixin
 from . import forms
 from . import models
+from projects.models import Position
 
+STATUS_CHOICES = {
+    'new': None,
+    'accepted': True,
+    'rejected': False
+}
 
 class SkillAutoComplete(LoginRequiredMixin,
                         IsOwnerMixin,
@@ -49,7 +55,8 @@ class ShowProfile(LoginRequiredMixin, PrefetchRelatedMixin, generic.TemplateView
         return super().get(request, **kwargs)
 
 
-class EditProfile(LoginRequiredMixin, IsOwnerMixin, PrefetchRelatedMixin, generic.UpdateView):
+class EditProfile(LoginRequiredMixin, IsOwnerMixin,
+                  PrefetchRelatedMixin, generic.UpdateView):
     model = models.UserProfile
     form_class = forms.UserProfileForm
     template_name = 'profile_edit.html'
@@ -124,7 +131,8 @@ class EditProfile(LoginRequiredMixin, IsOwnerMixin, PrefetchRelatedMixin, generi
         return reverse_lazy('profiles:show_profile', kwargs={'slug': self.object.slug})
 
 
-class UserApplications(LoginRequiredMixin, PrefetchRelatedMixin, generic.ListView):
+class UserApplications(LoginRequiredMixin,
+                       PrefetchRelatedMixin, generic.ListView):
     model = models.UserApplication
     template_name = 'applications.html'
     context_object_name = 'application_list'
@@ -133,24 +141,50 @@ class UserApplications(LoginRequiredMixin, PrefetchRelatedMixin, generic.ListVie
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        status_term = self.request.GET.get('status') or 'all'
+        proj_term = self.request.GET.get('proj') or 'all'
+        need_term = self.request.GET.get('need') or 'all'
+
+        if proj_term and proj_term != 'all':
+            queryset = queryset.filter(
+                project__title=proj_term
+            )
+        if need_term and need_term != 'all':
+            queryset = queryset.filter(
+                position__name=need_term
+            )
+        if status_term and status_term != 'all':
+            if status_term in STATUS_CHOICES.keys():
+                queryset = queryset.filter(
+                    is_accepted=STATUS_CHOICES[status_term]
+                )
+
         return queryset.filter(project__creator=self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['projects'] = self.request.user.projects.all()
+        context['status'] = self.request.GET.get('status') or 'all'
+        context['proj'] = self.request.GET.get('proj') or 'all'
+        context['need'] = self.request.GET.get('need') or 'all'
         return context
 
 
 class UserApplicationStatus(LoginRequiredMixin, generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
-        position = self.kwargs.get('position')
-        applicant = self.kwargs.get('applicant')
-        status = self.kwargs.get('status')
-        if status == 'approve' or status == 'deny':
-            if position and applicant:
-                bstatus = True if status == 'approve' else False
-                models.UserApplication.objects.filter(
-                    position=position, applicant=applicant
-                ).update(is_accepted=bstatus)
+        position_id = self.kwargs.get('position')
+        position = Position.objects.filter(pk=position_id).first()
+        if position.project.creator == self.request.user:
+            applicant = self.kwargs.get('applicant')
+            status = self.kwargs.get('status')
+            if status == 'approve' or status == 'deny':
+                if position and applicant:
+                    bstatus = True if status == 'approve' else False
+                    models.UserApplication.objects.filter(
+                        position=position, applicant=applicant
+                    ).update(is_accepted=bstatus)
+                    print('Updated Application')
+                    return HttpResponseRedirect(reverse('profiles:my_applications'))
+        print('You dont own this project')
         return HttpResponseRedirect(reverse('profiles:my_applications'))

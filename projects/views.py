@@ -19,10 +19,11 @@ class ProjectListView(PrefetchRelatedMixin, generic.ListView):
     prefetch_related = ['positions', 'positions__skills']
 
     def get_context_data(self, **kwargs):
-        context = super(ProjectListView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['project_needs'] = models.Position.objects.filter(
             project__in=context['projects']
-        )
+        ).exclude(applications__is_accepted=True)
+
         context['skill_needs'] = models.Skill.objects.filter(
             related_skills__in=context['project_needs']
         )
@@ -58,6 +59,9 @@ class ProjectDetailView(PrefetchRelatedMixin, generic.DetailView):
         context['profile'] = context['project'].creator.profile
         context['positions'] = models.Position.objects.filter(
             project=context['project']).exclude(applications__is_accepted=True)
+        context['applied_for'] = models.Position.objects.filter(
+            project=context['project'],
+            applications__applicant=self.request.user)
         return context
 
 
@@ -133,23 +137,22 @@ class PositionApplyView(LoginRequiredMixin, generic.TemplateView):
     def get(self, request, *args, **kwargs):
         pk = self.kwargs.get('pk')
         pos_pk = self.kwargs.get('position')
-
         project = get_object_or_404(models.Project, pk=pk)
         position = get_object_or_404(models.Position, pk=pos_pk)
-        if position:
-            application = UserApplication.objects.filter(
-                applicant=self.request.user,
-                project=pk,
-                pk=pos_pk
-            )
-            if application.exists():
-                return HttpResponseRedirect(reverse(
+        application = UserApplication.objects.filter(
+            position=position,
+            applicant=self.request.user
+        )
+
+        if application.exists():
+            print('You cannot apply twice')
+            return HttpResponseRedirect(reverse(
                    'projects:project_detail', kwargs={'pk': pk}))
 
-            application = UserApplication.objects.create(
-                applicant=self.request.user,
-                project=project,
-                position=position
-            )
+        UserApplication.objects.create(
+            applicant=self.request.user,
+            project=project,
+            position=position
+        )
         return HttpResponseRedirect(reverse(
-            'projects:project_detail', kwargs={'pk': pk}))
+            'projects:project_list'))

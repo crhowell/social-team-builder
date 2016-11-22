@@ -12,6 +12,10 @@ class Project(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 related_name='projects', null=True)
 
+    @property
+    def open_positions(self):
+        return self.positions.exclude(applications__is_accepted=True)
+
     def __str__(self):
         return '{}'.format(self.title)
 
