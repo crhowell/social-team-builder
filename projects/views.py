@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, reverse, Http404
 from django.urls import reverse_lazy
 from django.views import generic
 from django.db.models import Q
+
 from notifications.signals import notify
 
 from braces.views import LoginRequiredMixin, PrefetchRelatedMixin
@@ -56,7 +57,7 @@ class ProjectListView(PrefetchRelatedMixin, generic.ListView):
         return queryset
 
 
-class ProjectDetailView(PrefetchRelatedMixin, generic.DetailView):
+class ProjectDetailView(LoginRequiredMixin, PrefetchRelatedMixin, generic.DetailView):
     model = models.Project
     template_name = 'project_detail.html'
     context_object_name = 'project'
@@ -106,8 +107,6 @@ class ProjectCreateView(LoginRequiredMixin, generic.CreateView):
                     position.project = project
                     position.save()
                 p_formset.save_m2m()
-
-        # TODO: More logic needed here.
         return HttpResponseRedirect(reverse('projects:project_list'))
 
 
