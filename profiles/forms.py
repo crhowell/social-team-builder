@@ -1,7 +1,5 @@
 from django import forms
 
-from dal import autocomplete
-
 from core.forms import FormSetMedia
 from . import models
 
@@ -23,9 +21,6 @@ class SkillForm(forms.ModelForm):
     class Meta:
         model = models.Skill
         fields = ('name',)
-        widgets = {
-            'name': autocomplete.ModelSelect2(url='skill-autocomplete')
-        }
 
 
 class UserProjectForm(FormSetMedia):

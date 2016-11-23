@@ -5,7 +5,6 @@ from . import views
 
 
 urlpatterns = [
-    url(r'skill-autocomplete/$', views.SkillAutoComplete.as_view(), name='skill-autocomplete'),
     url(r'^me/applications/(?P<position>\d+)/(?P<applicant>\d+)/(?P<status>\w+)/$',
         views.UserApplicationStatus.as_view(), name='status_update'),
     url(r'^me/applications/$', views.UserApplications.as_view(), name='my_applications'),

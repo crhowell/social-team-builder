@@ -23,17 +23,6 @@ STATUS_CHOICES = {
 User = get_user_model()
 
 
-class SkillAutoComplete(LoginRequiredMixin,
-                        IsOwnerMixin,
-                        autocomplete.Select2QuerySetView):
-
-    def get_queryset(self):
-        qs = models.Skill.objects.all()
-        if self.q:
-            qs = qs.filter(name__istartswith=self.q)
-        return qs
-
-
 class ShowProfile(LoginRequiredMixin, PrefetchRelatedMixin, generic.TemplateView):
     model = models.UserProfile
     template_name = 'profile.html'
