@@ -1,5 +1,7 @@
 from django.core.urlresolvers import reverse_lazy
 from django.views import generic
+from django.contrib.auth import login
+
 from authtools import views as authviews
 
 from braces import views as bracesviews
@@ -21,11 +23,12 @@ class SignUpView(bracesviews.AnonymousRequiredMixin,
                  generic.CreateView):
 
     template_name = 'signup.html'
-    success_url = reverse_lazy('accounts:login')
+    success_url = reverse_lazy('profiles:edit_profile')
     form_class = forms.SignUpForm
     form_valid_message = "You're signed up!"
 
     def form_valid(self, form):
-        resp = super(SignUpView, self).form_valid(form)
-
+        resp = super().form_valid(form)
+        user = form.save()
+        login(self.request, user)
         return resp

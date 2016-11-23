@@ -13,22 +13,23 @@
   </div>
 
   <div class="bounds circle--page">
+  <form action="" method="POST" enctype="multipart/form-data">
     <div class="circle--page--header circle--fluid">
       <div class="circle--fluid--cell circle--fluid--primary">
         <h2>Profile</h2>
       </div>
       <div class="circle--fluid--cell circle--fluid--secondary">
-        <a class="button button-primary icon-on-left" href="profile.html">Save Changes</a>
+        <button class="button button-primary icon-on-left" type="submit">Save Changes</button>
       </div>
     </div>
-    <form action="" method="POST" enctype="multipart/form-data">
+
         {% csrf_token %}
 
         <div class="grid-70">
             {{ form.first_name }}
             {{ form.last_name }}
             {{ form.bio }}
-            <button type="submit">Update</button>
+
         </div>
         <div class="grid-25 grid-push-5">
           <div class="circle--secondary--module">
@@ -64,7 +65,9 @@
         </div>
     </form>
   </div>
+
 </div>
+
 {% endblock %}
 
 {% block js %}
