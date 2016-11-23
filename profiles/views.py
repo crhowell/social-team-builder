@@ -3,9 +3,11 @@ from django.db.models import Q
 from django.views import generic
 from django.shortcuts import (get_object_or_404, reverse,
                               HttpResponseRedirect, Http404)
+from django.contrib.auth import get_user_model
 
 from braces.views import LoginRequiredMixin, PrefetchRelatedMixin
 from dal import autocomplete
+from notifications.signals import notify
 
 from core.mixins import IsOwnerMixin
 from . import forms
@@ -17,6 +19,9 @@ STATUS_CHOICES = {
     'accepted': True,
     'rejected': False
 }
+
+User = get_user_model()
+
 
 class SkillAutoComplete(LoginRequiredMixin,
                         IsOwnerMixin,
@@ -109,7 +114,6 @@ class EditProfile(LoginRequiredMixin, IsOwnerMixin,
         )
 
         if form.is_valid():
-            print('FORM is valid')
             profile = form.save(commit=False)
             if s_formset.is_valid() and p_formset.is_valid():
                 skills = s_formset.save()
@@ -122,10 +126,11 @@ class EditProfile(LoginRequiredMixin, IsOwnerMixin,
                 for project in projects:
                     project.profile = profile
                     project.save()
-            else:
-                print('formset not valid')
 
-        return HttpResponseRedirect(reverse('profiles:my_profile'))
+                return HttpResponseRedirect(reverse('profiles:my_profile'))
+
+        return HttpResponseRedirect(reverse('profiles:my_profile',
+                                            {'form': form, 's_formset': s_formset}))
 
     def get_success_url(self):
         return reverse_lazy('profiles:show_profile', kwargs={'slug': self.object.slug})
@@ -176,15 +181,40 @@ class UserApplicationStatus(LoginRequiredMixin, generic.TemplateView):
         position_id = self.kwargs.get('position')
         position = Position.objects.filter(pk=position_id).first()
         if position.project.creator == self.request.user:
-            applicant = self.kwargs.get('applicant')
+            applicant_pk = self.kwargs.get('applicant')
+            applicant = get_object_or_404(User, pk=applicant_pk)
             status = self.kwargs.get('status')
             if status == 'approve' or status == 'deny':
                 if position and applicant:
                     bstatus = True if status == 'approve' else False
-                    models.UserApplication.objects.filter(
+                    application = models.UserApplication.objects.filter(
                         position=position, applicant=applicant
                     ).update(is_accepted=bstatus)
-                    print('Updated Application')
+
+                    if status == 'approve':
+                        msg_status = 'approved'
+                    else:
+                        msg_status = 'denied'
+
+                    notify.send(
+                        applicant,
+                        recipient=applicant,
+                        verb='Your application for {} as {} was {}'.format(
+                            position.project.title, position.name, msg_status
+                        ),
+                        description=''
+                    )
                     return HttpResponseRedirect(reverse('profiles:my_applications'))
-        print('You dont own this project')
         return HttpResponseRedirect(reverse('profiles:my_applications'))
+
+
+class UserNotifications(LoginRequiredMixin, PrefetchRelatedMixin, generic.TemplateView):
+    template_name = 'notifications.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['unreads'] = self.request.user.notifications.unread()
+        return context
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)

@@ -23,6 +23,7 @@
     </div>
     <form action="" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
+
         <div class="grid-70">
             {{ form.first_name }}
             {{ form.last_name }}

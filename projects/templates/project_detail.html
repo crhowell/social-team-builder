@@ -50,16 +50,6 @@
     </div>
 
     <div class="grid-25 grid-push-5">
-      <div class="circle--secondary--module">
-        <h3>Project Needs</h3>
-        <ul class="circle--link--list">
-          {% for position in positions %}
-            {% for skill in position.related_skills.all %}
-              <li><a>{{ skill }}</a></li>
-            {% endfor %}
-          {% endfor %}
-        </ul>
-      </div>
 
       <div class="circle--secondary--module">
         <h3>Project Timeline</h3>

@@ -23,17 +23,17 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'dal',
     'dal_select2',
-
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'django.contrib.humanize',
     'debug_toolbar',
     'authtools',
     'braces',
+    'notifications',
 
     'core',
     'accounts',
@@ -133,3 +133,4 @@ INTERNAL_IPS = ('127.0.0.1',)
 # Custom Authentication Model
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = reverse_lazy("accounts:login")
+

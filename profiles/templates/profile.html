@@ -4,12 +4,15 @@
 {% block content %}
 
 <div class="circle--actions--bar">
+{% if user.is_authenticated and request.user == profile.user %}
     <nav class="bounds">
       <ul class="circle--pill--list">
         <li><a href="{% url 'profiles:my_applications' %}">Applications</a></li>
-        <li><a class="selected" href="{% url 'profiles:my_profile' %}">Profile</a></li>
+        <li><a class="" href="{% url 'profiles:my_profile' %}">Profile</a></li>
+
       </ul>
     </nav>
+{% endif %}
   </div>
 
   <div class="bounds circle--page">
@@ -17,9 +20,11 @@
       <div class="circle--fluid--cell circle--fluid--primary">
         <h2>Profile</h2>
       </div>
+        {% if user.is_authenticated and request.user == profile.user %}
       <div class="circle--fluid--cell circle--fluid--secondary">
         <a class="button icon-on-left" href="{% url 'profiles:edit_profile' %}">Edit</a>
       </div>
+        {% endif %}
     </div>
 
     <div class="grid-70">

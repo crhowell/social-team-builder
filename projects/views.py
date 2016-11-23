@@ -3,13 +3,14 @@ from django.shortcuts import get_object_or_404, reverse, Http404
 from django.urls import reverse_lazy
 from django.views import generic
 from django.db.models import Q
+from notifications.signals import notify
 
 from braces.views import LoginRequiredMixin, PrefetchRelatedMixin
 
 from core.mixins import IsOwnerMixin
 from . import forms
 from . import models
-from profiles.models import UserApplication, Skill
+from profiles.models import UserApplication
 
 
 class ProjectListView(PrefetchRelatedMixin, generic.ListView):
@@ -26,9 +27,10 @@ class ProjectListView(PrefetchRelatedMixin, generic.ListView):
 
         context['skill_needs'] = models.Skill.objects.filter(
             related_skills__in=context['project_needs']
-        )
+        ).distinct()
         context['curr_filter'] = self.request.GET.get('filter')
         context['curr_term'] = self.request.GET.get('s')
+        context['curr_skill'] = self.request.GET.get('skill')
         return context
 
     def get_queryset(self):
@@ -42,9 +44,15 @@ class ProjectListView(PrefetchRelatedMixin, generic.ListView):
         filter_term = self.request.GET.get('filter')
         if filter_term:
             queryset = queryset.filter(
-                Q(positions__name=filter_term) |
-                Q(positions__skills__name=filter_term)
+                Q(positions__name=filter_term)
             )
+
+        skill_term = self.request.GET.get('skill')
+        if skill_term:
+            queryset = queryset.filter(
+                positions__skills__name=skill_term
+            ).distinct()
+
         return queryset
 
 
@@ -145,7 +153,6 @@ class PositionApplyView(LoginRequiredMixin, generic.TemplateView):
         )
 
         if application.exists():
-            print('You cannot apply twice')
             return HttpResponseRedirect(reverse(
                    'projects:project_detail', kwargs={'pk': pk}))
 
@@ -153,6 +160,23 @@ class PositionApplyView(LoginRequiredMixin, generic.TemplateView):
             applicant=self.request.user,
             project=project,
             position=position
+        )
+
+        notify.send(
+            self.request.user,
+            recipient=self.request.user,
+            verb='YOU submitted an application for {} as {}.'.format(
+              project.title, position.name
+            ),
+            description=''
+        )
+        notify.send(
+            project.creator,
+            recipient=project.creator,
+            verb='{} submitted an application for {} as {}'.format(
+                self.request.user, project.title, position.name,
+            ),
+            description=''
         )
         return HttpResponseRedirect(reverse(
             'projects:project_list'))
